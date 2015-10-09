@@ -1,8 +1,29 @@
 <?php
-    // var_dump($_POST);
-    $nickname = $_POST["nickname"];
-    $comment = $_POST["comment"];
+    // DBへの接続
+    $db = mysqli_connect('localhost', 'root', 'mysql', 'test_db') or die(mysqli_connect_error());
+    mysqli_set_charset($db,'utf8');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // var_dump($_POST);
+        $nickname = $_POST["nickname"];
+        $comment = $_POST["comment"];
+
+        // データの挿入
+        //// $sql = 'INSERT INTO posts (nickname, comment, created) VALUE ("","",NOW())';
+        $sql = sprintf('INSERT INTO posts (nickname, comment, created) VALUE ("%s","%s",NOW())',
+                          $nickname,
+                          $comment
+                      );
+        mysqli_query($db,$sql);
+    }
 ?>
+
+<?php
+    // データの取得
+    $sql = 'SELECT * FROM posts ORDER BY `created` DESC'; // 逆シングルクォート
+    $posts = mysqli_query($db,$sql) or die(mysqli_error($db));
+?>
+
 
 <!DOCTYPE html>
 <html lang="ja">
@@ -13,7 +34,13 @@
 <body>
   <h1>掲示版</h1>
   <ul>
-    <li><?php echo $nickname; ?> : <?php echo $comment; ?></li>
+    <?php while ($post = mysqli_fetch_assoc($posts)): ?>
+        <li>
+          <?php echo $post["nickname"]; ?> : 
+          <?php echo $post["comment"]; ?> - 
+          <?php echo $post["created"]; ?>
+        </li>
+    <?php endwhile; ?>
   </ul>
   <a href="post_sample.php">つぶやき画面へ</a>
 </body>
